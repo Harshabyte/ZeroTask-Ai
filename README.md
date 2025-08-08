@@ -3,7 +3,7 @@
 > **The world's largest library of ready-to-use N8N workflow automations**
 
 [![Website](https://img.shields.io/badge/Website-Live-success)](https://zerotask-ai.com)
-[![GitHub](https://img.shields.io/badge/GitHub-HarshaParisha-blue)](https://github.com/HarshaParisha)
+[![GitHub](https://img.shields.io/badge/GitHub-Harshabyte-blue)](https://github.com/Harshabyte)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![Workflows](https://img.shields.io/badge/Workflows-2055+-orange)](static/workflows.html)
 
@@ -61,7 +61,7 @@ ZeroTask AI Platform
 
 ```bash
 # Clone the repository
-git clone https://github.com/HarshaParisha/ZeroTask-Ai.git
+git clone https://github.com/Harshabyte/ZeroTask-Ai.git
 cd ZeroTask-Ai
 
 # Set up environment
@@ -179,7 +179,7 @@ ZeroTask-Ai/
 
 - **Instagram**: [@harsha.\_.l4](https://www.instagram.com/harsha._.l4)
 - **LinkedIn**: [Parisha Harshavardhan](https://www.linkedin.com/in/parisha-harshavardhan/)
-- **GitHub**: [HarshaParisha](https://github.com/HarshaParisha)
+- **GitHub**: [Harshabyte](https://github.com/Harshabyte)
 - **Email**: harshaparisha@gmail.com
 
 ### **Support the Project**
@@ -264,7 +264,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-### **Built with ❤️ by [Harsha Parisha](https://github.com/HarshaParisha)**
+### **Built with ❤️ by [Harsha Parisha](https://github.com/Harshabyte)**
 
 _"For the rebels, the innovators, the ones who build tomorrow while others sleep."_
 
