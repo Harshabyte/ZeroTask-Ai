@@ -683,3 +683,105 @@ function initParallaxScrolling() {
         sectionObserver.observe(section);
     });
 }
+
+// Learn More Modal Functionality
+function showLearnMoreModal() {
+    const modal = createLearnMoreModal();
+    document.body.appendChild(modal);
+    
+    // Animate modal in
+    setTimeout(() => {
+        modal.classList.add('modal-active');
+    }, 10);
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+}
+
+function createLearnMoreModal() {
+    const modal = document.createElement('div');
+    modal.className = 'learn-more-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop" onclick="closeLearnMoreModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Discover the Power of N8N Automation</h2>
+                <button class="modal-close" onclick="closeLearnMoreModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-section">
+                    <h3>🚀 What You'll Get</h3>
+                    <ul>
+                        <li>2,055+ ready-to-use workflow automations</li>
+                        <li>365+ pre-built integrations with popular services</li>
+                        <li>Complete documentation and setup guides</li>
+                        <li>Community-tested and enterprise-grade workflows</li>
+                    </ul>
+                </div>
+                <div class="modal-section">
+                    <h3>💡 Perfect For</h3>
+                    <ul>
+                        <li>Business process automation</li>
+                        <li>API integrations and data synchronization</li>
+                        <li>AI-powered workflow enhancement</li>
+                        <li>Custom automation development</li>
+                    </ul>
+                </div>
+                <div class="modal-section">
+                    <h3>🎯 Why Choose Us</h3>
+                    <ul>
+                        <li>100% free access to all workflows</li>
+                        <li>Professional-grade automation templates</li>
+                        <li>Active community support</li>
+                        <li>Regular updates and new integrations</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn primary" onclick="window.open('/files/workflows.html', '_blank'); closeLearnMoreModal();">
+                    Start Exploring Workflows
+                </button>
+                <button class="modal-btn secondary" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'}); closeLearnMoreModal();">
+                    View Features
+                </button>
+            </div>
+        </div>
+    `;
+    
+    return modal;
+}
+
+function closeLearnMoreModal() {
+    const modal = document.querySelector('.learn-more-modal');
+    if (modal) {
+        modal.classList.remove('modal-active');
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+// Close modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeLearnMoreModal();
+    }
+});
+
+// Button click tracking
+document.addEventListener('click', (e) => {
+    if (e.target.id === 'explore-workflows-btn') {
+        console.log('🔗 Explore Workflows button clicked - Opening workflows page');
+        // Add analytics tracking here if needed
+    }
+    
+    if (e.target.id === 'learn-more-btn') {
+        console.log('📚 Learn More button clicked');
+        // Add analytics tracking here if needed
+    }
+});

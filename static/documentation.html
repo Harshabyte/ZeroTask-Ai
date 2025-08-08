@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - OneStop AI × N8N</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%);
+            color: white;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .back-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .back-btn:hover {
+            background: #5855eb;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            margin-top: 100px;
+            height: calc(100vh - 100px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-container:active {
+            cursor: grabbing;
+        }
+
+        .documentation-image {
+            max-width: none;
+            max-height: none;
+            transition: transform 0.1s ease;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+        }
+
+        .control-btn:hover {
+            background: #5855eb;
+            transform: scale(1.1);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .zoom-level {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 18px;
+            color: #6366f1;
+        }
+
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #ef4444;
+            font-size: 18px;
+        }
+
+        .instructions {
+            position: fixed;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 200px;
+        }
+
+        .instructions h3 {
+            color: #6366f1;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .instructions ul {
+            list-style: none;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .instructions {
+                display: none;
+            }
+            
+            .controls {
+                bottom: 20px;
+                padding: 10px 20px;
+                gap: 10px;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"/>
+                </svg>
+                OneStop AI × N8N Documentation
+            </div>
+            <a href="javascript:window.close();" class="back-btn">← Back to Website</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="image-container" id="imageContainer">
+            <div class="loading" id="loading">Loading documentation...</div>
+            <img src="doc-mer.png" alt="N8N Workflow Documentation" class="documentation-image" id="docImage" style="display: none;">
+            <div class="error" id="error" style="display: none;">
+                <h3>Image not found</h3>
+                <p>Please ensure the documentation image is placed in the correct directory.</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn" id="zoomOut" title="Zoom Out">−</button>
+            <div class="zoom-level" id="zoomLevel">100%</div>
+            <button class="control-btn" id="zoomIn" title="Zoom In">+</button>
+            <button class="control-btn" id="resetView" title="Reset View">⌂</button>
+            <button class="control-btn" id="fitToScreen" title="Fit to Screen">⊞</button>
+        </div>
+
+        <div class="instructions">
+            <h3>Controls</h3>
+            <ul>
+                <li>• Drag to pan around</li>
+                <li>• Scroll to zoom in/out</li>
+                <li>• Click buttons to control view</li>
+                <li>• Double-click to fit screen</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        class ImageViewer {
+            constructor() {
+                this.image = document.getElementById('docImage');
+                this.container = document.getElementById('imageContainer');
+                this.loading = document.getElementById('loading');
+                this.error = document.getElementById('error');
+                this.zoomLevel = document.getElementById('zoomLevel');
+                
+                this.scale = 1;
+                this.translateX = 0;
+                this.translateY = 0;
+                this.isDragging = false;
+                this.lastX = 0;
+                this.lastY = 0;
+                
+                this.minScale = 0.1;
+                this.maxScale = 5;
+                this.scaleStep = 0.1;
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.loadImage();
+            }
+            
+            loadImage() {
+                this.image.onload = () => {
+                    this.loading.style.display = 'none';
+                    this.image.style.display = 'block';
+                    this.fitToScreen();
+                };
+                
+                this.image.onerror = () => {
+                    this.loading.style.display = 'none';
+                    this.error.style.display = 'block';
+                };
+            }
+            
+            bindEvents() {
+                // Mouse wheel zoom
+                this.container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -this.scaleStep : this.scaleStep;
+                    this.zoom(delta, e.clientX, e.clientY);
+                });
+                
+                // Mouse drag
+                this.container.addEventListener('mousedown', (e) => {
+                    this.isDragging = true;
+                    this.lastX = e.clientX;
+                    this.lastY = e.clientY;
+                    this.container.style.cursor = 'grabbing';
+                });
+                
+                document.addEventListener('mousemove', (e) => {
+                    if (!this.isDragging) return;
+                    
+                    const deltaX = e.clientX - this.lastX;
+                    const deltaY = e.clientY - this.lastY;
+                    
+                    this.translateX += deltaX;
+                    this.translateY += deltaY;
+                    
+                    this.updateTransform();
+                    
+                    this.lastX = e.clientX;
+                    this.lastY = e.clientY;
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    this.isDragging = false;
+                    this.container.style.cursor = 'grab';
+                });
+                
+                // Touch events for mobile
+                this.container.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        this.isDragging = true;
+                        this.lastX = e.touches[0].clientX;
+                        this.lastY = e.touches[0].clientY;
+                    }
+                });
+                
+                this.container.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (!this.isDragging || e.touches.length !== 1) return;
+                    
+                    const deltaX = e.touches[0].clientX - this.lastX;
+                    const deltaY = e.touches[0].clientY - this.lastY;
+                    
+                    this.translateX += deltaX;
+                    this.translateY += deltaY;
+                    
+                    this.updateTransform();
+                    
+                    this.lastX = e.touches[0].clientX;
+                    this.lastY = e.touches[0].clientY;
+                });
+                
+                this.container.addEventListener('touchend', () => {
+                    this.isDragging = false;
+                });
+                
+                // Double click to fit screen
+                this.container.addEventListener('dblclick', () => {
+                    this.fitToScreen();
+                });
+                
+                // Control buttons
+                document.getElementById('zoomIn').addEventListener('click', () => {
+                    this.zoom(this.scaleStep);
+                });
+                
+                document.getElementById('zoomOut').addEventListener('click', () => {
+                    this.zoom(-this.scaleStep);
+                });
+                
+                document.getElementById('resetView').addEventListener('click', () => {
+                    this.resetView();
+                });
+                
+                document.getElementById('fitToScreen').addEventListener('click', () => {
+                    this.fitToScreen();
+                });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case '+':
+                        case '=':
+                            this.zoom(this.scaleStep);
+                            break;
+                        case '-':
+                            this.zoom(-this.scaleStep);
+                            break;
+                        case '0':
+                            this.resetView();
+                            break;
+                        case 'f':
+                        case 'F':
+                            this.fitToScreen();
+                            break;
+                    }
+                });
+            }
+            
+            zoom(delta, centerX, centerY) {
+                const newScale = Math.max(this.minScale, Math.min(this.maxScale, this.scale + delta));
+                
+                if (centerX && centerY) {
+                    // Zoom towards cursor position
+                    const rect = this.container.getBoundingClientRect();
+                    const relativeX = centerX - rect.left;
+                    const relativeY = centerY - rect.top;
+                    
+                    const scaleFactor = newScale / this.scale;
+                    
+                    this.translateX = relativeX - (relativeX - this.translateX) * scaleFactor;
+                    this.translateY = relativeY - (relativeY - this.translateY) * scaleFactor;
+                }
+                
+                this.scale = newScale;
+                this.updateTransform();
+                this.updateZoomLevel();
+            }
+            
+            resetView() {
+                this.scale = 1;
+                this.translateX = 0;
+                this.translateY = 0;
+                this.updateTransform();
+                this.updateZoomLevel();
+            }
+            
+            fitToScreen() {
+                const containerRect = this.container.getBoundingClientRect();
+                const imageRect = this.image.getBoundingClientRect();
+                
+                const scaleX = containerRect.width / this.image.naturalWidth;
+                const scaleY = containerRect.height / this.image.naturalHeight;
+                
+                this.scale = Math.min(scaleX, scaleY) * 0.9; // 90% of available space
+                this.translateX = 0;
+                this.translateY = 0;
+                
+                this.updateTransform();
+                this.updateZoomLevel();
+            }
+            
+            updateTransform() {
+                this.image.style.transform = `translate(${this.translateX}px, ${this.translateY}px) scale(${this.scale})`;
+            }
+            
+            updateZoomLevel() {
+                this.zoomLevel.textContent = `${Math.round(this.scale * 100)}%`;
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ImageViewer();
+        });
+    </script>
+</body>
+</html>

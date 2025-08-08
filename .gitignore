@@ -29,6 +29,29 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment files (ALL VARIANTS)
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+!.env.example
+.environment
+.secrets
+config.json
+secrets.json
+credentials.json
+auth.json
+
+# API Keys and Tokens
+*.key
+*.pem
+*.p12
+*.pfx
+api_keys.txt
+tokens.txt
+secrets.txt
+
 # IDE
 .vscode/
 .idea/
@@ -91,3 +114,38 @@ package-lock.json
 
 # Claude Code local settings (created during development)
 .claude/settings.local.json
+
+# Security Files
+*.cert
+*.crt
+*.csr
+*.der
+*.jks
+*.keystore
+*.p7b
+*.p7c
+*.p7r
+*.spc
+*.ssl
+
+# Configuration files that might contain secrets
+config/production.json
+config/development.json
+config/local.json
+.config/
+local_settings.py
+production_settings.py
+
+# Docker secrets
+docker-compose.override.yml
+.dockerignore
+
+# Deployment files
+.deploy/
+deployment/
+k8s/secrets/
+
+# Personal files
+personal/
+private/
+my_*/
