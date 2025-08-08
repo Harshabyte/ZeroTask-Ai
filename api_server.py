@@ -101,18 +101,32 @@ class StatsResponse(BaseModel):
 
 @app.get("/")
 async def root():
-    """Serve the main documentation page."""
-    static_dir = Path("static")
-    index_file = static_dir / "index.html"
+    """Serve the main landing page."""
+    index_file = Path("index.html")
     if not index_file.exists():
         return HTMLResponse("""
         <html><body>
         <h1>Setup Required</h1>
-        <p>Static files not found. Please ensure the static directory exists with index.html</p>
+        <p>index.html not found. Please ensure index.html exists in the root directory</p>
         <p>Current directory: """ + str(Path.cwd()) + """</p>
         </body></html>
         """)
     return FileResponse(str(index_file))
+
+@app.get("/workflows")
+async def workflows_documentation():
+    """Serve the workflow documentation page."""
+    static_dir = Path("static")
+    workflows_file = static_dir / "workflows.html"
+    if not workflows_file.exists():
+        return HTMLResponse("""
+        <html><body>
+        <h1>Documentation Not Found</h1>
+        <p>Workflow documentation file not found.</p>
+        <p><a href="/">← Back to Home</a></p>
+        </body></html>
+        """)
+    return FileResponse(str(workflows_file))
 
 @app.get("/health")
 async def health_check():
@@ -489,12 +503,43 @@ async def global_exception_handler(request, exc):
     )
 
 # Mount static files AFTER all routes are defined
-static_dir = Path("static")
-if static_dir.exists():
-    app.mount("/static", StaticFiles(directory="static"), name="static")
-    print(f"✅ Static files mounted from {static_dir.absolute()}")
-else:
-    print(f"❌ Warning: Static directory not found at {static_dir.absolute()}")
+# Mount current directory for CSS, JS, images, and other assets directly at root level
+current_dir = Path(".")
+
+# Mount specific file types at root level for direct access
+@app.get("/styles.css")
+async def serve_styles():
+    """Serve the main CSS file."""
+    css_file = Path("styles.css")
+    if css_file.exists():
+        return FileResponse(str(css_file), media_type="text/css")
+    raise HTTPException(status_code=404, detail="CSS file not found")
+
+@app.get("/scripts.js")
+async def serve_scripts():
+    """Serve the main JavaScript file."""
+    js_file = Path("scripts.js")
+    if js_file.exists():
+        return FileResponse(str(js_file), media_type="application/javascript")
+    raise HTTPException(status_code=404, detail="JavaScript file not found")
+
+@app.get("/bg.jpeg")
+async def serve_background():
+    """Serve the background image."""
+    bg_file = Path("bg.jpeg")
+    if bg_file.exists():
+        return FileResponse(str(bg_file), media_type="image/jpeg")
+    raise HTTPException(status_code=404, detail="Background image not found")
+
+# Also mount static directory for other assets
+app.mount("/static", StaticFiles(directory="."), name="static")
+print(f"✅ Static files mounted from {current_dir.absolute()}")
+
+# Also mount the static subdirectory if it exists
+static_subdir = Path("static")
+if static_subdir.exists():
+    app.mount("/files", StaticFiles(directory="static"), name="files")
+    print(f"✅ Additional static files mounted from {static_subdir.absolute()}")
 
 def create_static_directory():
     """Create static directory if it doesn't exist."""

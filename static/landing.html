@@ -25,7 +25,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- CSS -->
     <style>
@@ -57,7 +57,7 @@ html {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     line-height: 1.6;
     color: var(--text-primary);
     background: var(--background-primary);
@@ -122,6 +122,118 @@ body {
     backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
     border-radius: 20px;
+}
+
+/* Navigation */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    padding: 1rem 0;
+    transition: all var(--transition-medium);
+    background: rgba(10, 10, 10, 0.1);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.navbar.scrolled {
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(30px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.logo-icon {
+    font-size: 1.5rem;
+    animation: logoOrbit 8s ease-in-out infinite;
+}
+
+@keyframes logoOrbit {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(5deg) scale(1.05); }
+    50% { transform: rotate(0deg) scale(1.1); }
+    75% { transform: rotate(-5deg) scale(1.05); }
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    transition: all var(--transition-medium);
+}
+
+.nav-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    transition: all var(--transition-medium);
+    padding: 0.5rem 0;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    color: var(--text-primary);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transition: width var(--transition-medium);
+}
+
+.nav-link:hover::after,
+.nav-link.active::after {
+    width: 100%;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 4px;
+}
+
+.mobile-menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background: var(--text-primary);
+    transition: all var(--transition-medium);
+    border-radius: 2px;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
 }
 
 /* Hero Section */
@@ -206,11 +318,73 @@ body {
     z-index: 2;
 }
 
+.hero-icon {
+    margin-bottom: 2rem;
+}
+
+.ai-spark {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: sparkPulse 3s ease-in-out infinite;
+    box-shadow: 0 0 60px rgba(99, 102, 241, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes sparkPulse {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 60px rgba(99, 102, 241, 0.3);
+    }
+    50% { 
+        transform: scale(1.05); 
+        box-shadow: 0 0 80px rgba(99, 102, 241, 0.5);
+    }
+}
+
+.ai-spark::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    50%, 100% { left: 100%; }
+}
+
+.spark-inner {
+    font-size: 2rem;
+    color: white;
+    z-index: 1;
+}
+
 .hero-title {
     font-size: 4rem;
     font-weight: 800;
     margin-bottom: 1.5rem;
     line-height: 1.1;
+}
+
+.typing-text {
+    border-right: 2px solid var(--primary-color);
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 50% { border-color: var(--primary-color); }
+    51%, 100% { border-color: transparent; }
 }
 
 .hero-subtitle {
@@ -223,7 +397,8 @@ body {
 /* Hero Search */
 .hero-search {
     margin-bottom: 3rem;
-    opacity: 1;
+    opacity: 0;
+    animation: searchFadeIn 1s ease-out 2s forwards;
 }
 
 @keyframes searchFadeIn {
@@ -349,74 +524,32 @@ body {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.scroll-text {
-    color: var(--text-secondary);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    opacity: 0.8;
-}
-
-.mouse-scroll {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.mouse {
-    width: 24px;
-    height: 40px;
-    border: 2px solid var(--text-secondary);
-    border-radius: 12px;
-    position: relative;
-    opacity: 0.7;
-}
-
-.mouse-wheel {
-    width: 3px;
-    height: 6px;
-    background: var(--text-secondary);
-    border-radius: 1.5px;
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: mouseWheel 2s ease-in-out infinite;
 }
 
 .scroll-arrow {
-    color: var(--text-secondary);
-    opacity: 0.6;
+    width: 2px;
+    height: 40px;
+    background: linear-gradient(to bottom, transparent, var(--primary-color));
+    position: relative;
     animation: scrollBounce 2s ease-in-out infinite;
 }
 
-@keyframes mouseWheel {
-    0%, 20%, 50%, 80%, 100% { 
-        transform: translateX(-50%) translateY(0); 
-        opacity: 0.7;
-    }
-    40% { 
-        transform: translateX(-50%) translateY(8px); 
-        opacity: 0.3;
-    }
-    60% { 
-        transform: translateX(-50%) translateY(4px); 
-        opacity: 0.5;
-    }
+.scroll-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    transform: rotate(45deg);
 }
 
 @keyframes scrollBounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
-    40% { transform: translateY(3px); opacity: 0.8; }
-    60% { transform: translateY(1px); opacity: 0.7; }
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(10px); }
+    60% { transform: translateY(5px); }
 }
 
 /* Workflow Access Section */
@@ -520,6 +653,30 @@ body {
     <!-- Scroll Progress Bar -->
     <div id="scroll-progress" class="scroll-progress"></div>
 
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">⚡</span>
+                <span class="gradient-text">OneStop AI × N8N</span>
+            </div>
+            
+            <div class="nav-links" id="nav-links">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#workflows" class="nav-link">Workflows</a>
+                <a href="#documentation" onclick="window.location.href='/'; return false;" class="nav-link">Documentation</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#contact" class="nav-link">Contact</a>
+            </div>
+            
+            <div class="mobile-menu-toggle" id="mobile-menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
     <!-- Hero Section -->
     <section class="hero" id="home">
         <div class="hero-background">
@@ -528,27 +685,39 @@ body {
         </div>
         
         <div class="hero-content">
+            <div class="hero-icon">
+                <div class="ai-spark">
+                    <div class="spark-inner">⚡</div>
+                </div>
+            </div>
+            
             <h1 class="hero-title">
-                <span class="gradient-text">OneStop AI × N8N</span>
+                <span class="gradient-text typing-text" id="typing-text"></span>
             </h1>
             
             <p class="hero-subtitle">
                 Discover the world's largest library of ready-to-use N8N workflow automations. Free access to 2,000+ workflows, 365+ integrations, and endless possibilities.
             </p>
+            
+            <div class="hero-search">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search workflows..." id="search-input">
+                    <button class="search-button" id="search-button">
+                        🔍
+                    </button>
+                </div>
+            </div>
+            
+            <div class="hero-cta">
+                <button class="cta-button primary" onclick="window.location.href='/'">
+                    <span>🚀</span>
+                    <span>Explore Workflow Library</span>
+                </button>
+            </div>
         </div>
         
         <div class="scroll-indicator">
-            <div class="scroll-text">SCROLL TO EXPLORE</div>
-            <div class="mouse-scroll">
-                <div class="mouse">
-                    <div class="mouse-wheel"></div>
-                </div>
-                <div class="scroll-arrow">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M8 3V13M8 13L12 9M8 13L4 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-            </div>
+            <div class="scroll-arrow"></div>
         </div>
     </section>
 
@@ -558,7 +727,7 @@ body {
             <h2>Access the Complete Workflow Library</h2>
             <p>Browse through over 2,000 professionally crafted automation workflows, covering everything from data processing to API integrations and business automation.</p>
             
-            <button class="cta-button primary" onclick="window.location.href='/workflows'">
+            <button class="cta-button primary" onclick="window.location.href='/'">
                 <span>📚</span>
                 <span>View Full Documentation</span>
             </button>
@@ -567,6 +736,46 @@ body {
 
     <!-- JavaScript -->
     <script>
+        // Typing Animation
+        const typingText = document.getElementById('typing-text');
+        const phrases = [
+            'OneStop AI × N8N',
+            'World\'s Largest Automation Library',
+            '2,000+ Free Workflows',
+            '365+ Integrations'
+        ];
+        let currentPhrase = 0;
+        let currentChar = 0;
+        let isDeleting = false;
+
+        function typeEffect() {
+            const current = phrases[currentPhrase];
+            
+            if (!isDeleting) {
+                typingText.textContent = current.substring(0, currentChar + 1);
+                currentChar++;
+                
+                if (currentChar === current.length) {
+                    isDeleting = true;
+                    setTimeout(typeEffect, 2000);
+                    return;
+                }
+            } else {
+                typingText.textContent = current.substring(0, currentChar);
+                currentChar--;
+                
+                if (currentChar === 0) {
+                    isDeleting = false;
+                    currentPhrase = (currentPhrase + 1) % phrases.length;
+                }
+            }
+            
+            setTimeout(typeEffect, isDeleting ? 50 : 100);
+        }
+
+        // Start typing animation
+        setTimeout(typeEffect, 1000);
+
         // Scroll Progress Bar
         function updateScrollProgress() {
             const scrollTop = window.scrollY;
@@ -617,8 +826,8 @@ body {
         function handleSearch() {
             const query = searchInput.value.trim();
             if (query) {
-                // Redirect to workflow documentation with search query
-                window.location.href = `/workflows?search=${encodeURIComponent(query)}`;
+                // Redirect to main documentation with search query
+                window.location.href = `/?search=${encodeURIComponent(query)}`;
             }
         }
 
