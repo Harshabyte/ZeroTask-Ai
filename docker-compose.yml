@@ -1,7 +1,24 @@
+version: '3.8'
+
 services:
-  doc:
-    image: workflows-doc:latest
-    build:
-      context: .
+  n8n-workflows:
+    build: .
     ports:
       - "8000:8000"
+    volumes:
+      - ./workflows:/app/workflows:ro
+      - ./static:/app/static:ro
+      - workflows_db:/app/data
+    environment:
+      - WORKFLOW_DB_PATH=/app/data/workflows.db
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  workflows_db:

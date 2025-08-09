@@ -711,6 +711,12 @@ class WorkflowDatabase:
         conn.close()
         return results, total
 
+    def close(self):
+        """Close database connection (stub method for compatibility)."""
+        # SQLite connections are automatically closed when they go out of scope
+        # This method exists for API compatibility
+        pass
+
 
 def main():
     """Command-line interface for workflow database."""

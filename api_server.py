@@ -16,14 +16,38 @@ import os
 import asyncio
 from pathlib import Path
 import uvicorn
+from contextlib import asynccontextmanager
 
 from workflow_db import WorkflowDatabase
 
-# Initialize FastAPI app
+# Initialize database
+db = WorkflowDatabase()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events."""
+    # Startup
+    try:
+        stats = db.get_stats()
+        if stats['total'] == 0:
+            print("⚠️  Warning: No workflows found in database. Run indexing first.")
+        else:
+            print(f"✅ Database connected: {stats['total']} workflows indexed")
+    except Exception as e:
+        print(f"❌ Database connection failed: {e}")
+        raise
+    
+    yield
+    
+    # Shutdown
+    db.close()
+
+# Initialize FastAPI app with lifespan
 app = FastAPI(
     title="N8N Workflow Documentation API",
     description="Fast API for browsing and searching workflow documentation",
-    version="2.0.0"
+    version="2.0.0",
+    lifespan=lifespan
 )
 
 # Add middleware for performance
@@ -35,23 +59,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize database
-db = WorkflowDatabase()
-
-# Startup function to verify database
-@app.on_event("startup")
-async def startup_event():
-    """Verify database connectivity on startup."""
-    try:
-        stats = db.get_stats()
-        if stats['total'] == 0:
-            print("⚠️  Warning: No workflows found in database. Run indexing first.")
-        else:
-            print(f"✅ Database connected: {stats['total']} workflows indexed")
-    except Exception as e:
-        print(f"❌ Database connection failed: {e}")
-        raise
 
 # Response models
 class WorkflowSummary(BaseModel):
@@ -115,15 +122,23 @@ async def root():
 
 @app.get("/workflows")
 async def workflows_documentation():
-    """Serve the workflow documentation page."""
+    """Serve the professional workflow documentation page."""
     static_dir = Path("static")
-    workflows_file = static_dir / "workflows.html"
+    workflows_file = static_dir / "workflows_new.html"
     if not workflows_file.exists():
+        # Fallback to old version if new one doesn't exist
+        fallback_file = static_dir / "workflows.html"
+        if fallback_file.exists():
+            print(f"✅ Using fallback workflows file at: {fallback_file}")
+            return FileResponse(str(fallback_file))
+        
         return HTMLResponse("""
         <html><body>
         <h1>Documentation Not Found</h1>
         <p>Workflow documentation file not found.</p>
         <p><a href="/">← Back to Home</a></p>
+        <p>Available files in static/:</p>
+        <ul>""" + "".join([f"<li>{f.name}</li>" for f in Path("static").glob("*.html") if Path("static").exists()]) + """</ul>
         </body></html>
         """)
     return FileResponse(str(workflows_file))
@@ -503,9 +518,6 @@ async def global_exception_handler(request, exc):
     )
 
 # Mount static files AFTER all routes are defined
-# Mount current directory for CSS, JS, images, and other assets directly at root level
-current_dir = Path(".")
-
 # Mount specific file types at root level for direct access
 @app.get("/styles.css")
 async def serve_styles():
@@ -526,20 +538,52 @@ async def serve_scripts():
 @app.get("/bg.jpeg")
 async def serve_background():
     """Serve the background image."""
+    # Try root directory first
     bg_file = Path("bg.jpeg")
     if bg_file.exists():
         return FileResponse(str(bg_file), media_type="image/jpeg")
+    
+    # Try static directory
+    bg_file_static = Path("static/bg.jpeg")
+    if bg_file_static.exists():
+        return FileResponse(str(bg_file_static), media_type="image/jpeg")
+    
     raise HTTPException(status_code=404, detail="Background image not found")
 
-# Also mount static directory for other assets
-app.mount("/static", StaticFiles(directory="."), name="static")
-print(f"✅ Static files mounted from {current_dir.absolute()}")
+# Additional asset routes for static files
+@app.get("/static/{filename}")
+async def serve_static_file(filename: str):
+    """Serve files from static directory."""
+    file_path = Path("static") / filename
+    if file_path.exists() and file_path.is_file():
+        # Determine media type based on extension
+        suffix = file_path.suffix.lower()
+        media_types = {
+            '.html': 'text/html',
+            '.css': 'text/css',
+            '.js': 'application/javascript',
+            '.jpeg': 'image/jpeg',
+            '.jpg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.json': 'application/json',
+            '.txt': 'text/plain'
+        }
+        media_type = media_types.get(suffix, 'application/octet-stream')
+        return FileResponse(str(file_path), media_type=media_type)
+    raise HTTPException(status_code=404, detail=f"File {filename} not found")
 
-# Also mount the static subdirectory if it exists
+# Mount the static directory for fallback access
+current_dir = Path(".")
 static_subdir = Path("static")
+
+print(f"✅ Static routes configured for {current_dir.absolute()}")
 if static_subdir.exists():
+    print(f"✅ Static directory found at {static_subdir.absolute()}")
+    # Mount for alternative access patterns
     app.mount("/files", StaticFiles(directory="static"), name="files")
-    print(f"✅ Additional static files mounted from {static_subdir.absolute()}")
+    print(f"✅ Alternative static files mounted at /files/")
 
 def create_static_directory():
     """Create static directory if it doesn't exist."""
@@ -595,10 +639,11 @@ def run_server(host: str = "127.0.0.1", port: int = 8000, reload: bool = False):
 
 if __name__ == "__main__":
     import argparse
+    import os
     
     parser = argparse.ArgumentParser(description='N8N Workflow Documentation API Server')
-    parser.add_argument('--host', default='127.0.0.1', help='Host to bind to')
-    parser.add_argument('--port', type=int, default=8000, help='Port to bind to')
+    parser.add_argument('--host', default=os.getenv('HOST', '127.0.0.1'), help='Host to bind to')
+    parser.add_argument('--port', type=int, default=int(os.getenv('PORT', 8000)), help='Port to bind to')
     parser.add_argument('--reload', action='store_true', help='Enable auto-reload for development')
     
     args = parser.parse_args()

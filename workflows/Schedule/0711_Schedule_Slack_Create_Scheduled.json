@@ -202,7 +202,7 @@
       ],
       "parameters": {
         "height": 260,
-        "content": "## Setup\n1. Add MongoDB, Slack credentials\n2. Add a query auth credential where the key='token' and the value being your apify token\n3. Modify the 'Assign parameters' node to include the Upwork URLs you want to query for"
+        "content": "## Setup\n1. Add MongoDB, Slack credentials\n2. Add a query auth credential where the key='token' and the value being your API token\n3. Modify the 'Assign parameters' node to include the Upwork URLs you want to query for"
       },
       "typeVersion": 1
     },

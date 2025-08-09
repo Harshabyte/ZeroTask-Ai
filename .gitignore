@@ -48,6 +48,14 @@ auth.json
 *.pem
 *.p12
 *.pfx
+*token*
+*api_key*
+*secret*
+
+# Large files
+workflow-documentation.html
+*.html.large
+*.backup.html
 api_keys.txt
 tokens.txt
 secrets.txt

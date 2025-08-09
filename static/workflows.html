@@ -1228,13 +1228,21 @@
       }
 
       renderWorkflows() {
-        const html = this.state.workflows.map(workflow => this.createWorkflowCard(workflow)).join('');
+        const html = this.state.workflows.map((workflow, idx) => {
+          // Add a data-index attribute for reliable lookup
+          return this.createWorkflowCard(workflow, idx);
+        }).join('');
         this.elements.workflowGrid.innerHTML = html;
 
-        // Add click handlers to cards
-        this.elements.workflowGrid.querySelectorAll('.workflow-card').forEach((card, index) => {
-          card.addEventListener('click', () => {
-            this.openWorkflowDetail(this.state.workflows[index]);
+        // Add click handlers to cards (use data-index for correct mapping)
+        this.elements.workflowGrid.querySelectorAll('.workflow-card').forEach((card) => {
+          card.addEventListener('click', (e) => {
+            // Prevent click if user clicks a button inside the card
+            if (e.target.closest('.action-btn')) return;
+            const idx = card.getAttribute('data-index');
+            if (idx !== null) {
+              this.openWorkflowDetail(this.state.workflows[Number(idx)]);
+            }
           });
         });
       }
@@ -1252,38 +1260,44 @@
           ? `<span class="integration-tag">+${workflow.integrations.length - 5}</span>`
           : '';
 
+        // Add data-index for reliable modal opening
         return `
-                    <div class="workflow-card" data-filename="${workflow.filename}">
-                        <div class="workflow-header">
-                            <div class="workflow-meta">
-                                <div class="status-dot ${statusClass}"></div>
-                                <div class="complexity-dot ${complexityClass}"></div>
-                                <span>${workflow.node_count} nodes</span>
-                                <span class="category-badge">${this.escapeHtml(category)}</span>
-                            </div>
-                            <span class="trigger-badge">${this.escapeHtml(workflow.trigger_type)}</span>
-                        </div>
-                        
-                        <h3 class="workflow-title">${this.escapeHtml(workflow.name)}</h3>
-                        <p class="workflow-description">${this.escapeHtml(workflow.description)}</p>
-                        
-                        ${workflow.integrations.length > 0 ? `
-                            <div class="workflow-integrations">
-                                <h4 class="integrations-title">Integrations (${workflow.integrations.length})</h4>
-                                <div class="integrations-list">
-                                    ${integrations}
-                                    ${moreIntegrations}
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
+          <div class="workflow-card" data-filename="${workflow.filename}" data-index="${arguments[1]}">
+            <div class="workflow-header">
+              <div class="workflow-meta">
+                <div class="status-dot ${statusClass}"></div>
+                <div class="complexity-dot ${complexityClass}"></div>
+                <span>${workflow.node_count} nodes</span>
+                <span class="category-badge">${this.escapeHtml(category)}</span>
+              </div>
+              <span class="trigger-badge">${this.escapeHtml(workflow.trigger_type)}</span>
+            </div>
+            <h3 class="workflow-title">${this.escapeHtml(workflow.name)}</h3>
+            <p class="workflow-description">${this.escapeHtml(workflow.description)}</p>
+            ${workflow.integrations.length > 0 ? `
+              <div class="workflow-integrations">
+                <h4 class="integrations-title">Integrations (${workflow.integrations.length})</h4>
+                <div class="integrations-list">
+                  ${integrations}
+                  ${moreIntegrations}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
       }
 
       async openWorkflowDetail(workflow) {
+        // Ensure modal is visible and reset view states
         this.currentWorkflow = workflow;
         this.elements.modalTitle.textContent = workflow.name;
         this.elements.modalDescription.textContent = workflow.description;
+        // Add event listeners for modal actions (View JSON, Download JSON)
+        this.elements.viewJsonBtn.onclick = () => this.toggleJsonView();
+        this.elements.downloadBtn.onclick = (e) => {
+          // Let the anchor work, but also allow programmatic download if needed
+          e.stopPropagation();
+        };
 
         // Update stats
         const category = this.getWorkflowCategory(workflow.filename);
@@ -1307,7 +1321,7 @@
         }
 
         // Set download link
-        this.elements.downloadBtn.href = `/api/workflows/${workflow.filename}/download`;
+        this.elements.downloadBtn.href = `/workflows/${workflow.filename}/download`;
         this.elements.downloadBtn.download = workflow.filename;
 
         // Reset view states
