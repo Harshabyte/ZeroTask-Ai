@@ -1,40 +1,14 @@
 {
-  "rewrites": [
+  "builds": [
     {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/workflows",
-      "destination": "/static/workflows.html"
-    },
-    {
-      "source": "/documentation",
-      "destination": "/static/documentation.html"
-    },
-    {
-      "source": "/api-reference",
-      "destination": "/static/api-reference.html"
+      "src": "api_server.py",
+      "use": "@vercel/python"
     }
   ],
-  "headers": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    },
-    {
-      "source": "/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
+      "src": "/(.*)",
+      "dest": "api_server.py"
     }
   ]
 }

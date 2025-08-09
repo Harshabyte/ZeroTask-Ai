@@ -649,3 +649,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     run_server(host=args.host, port=args.port, reload=args.reload)
+
+# Vercel compatibility - expose the app instance
+handler = app
