@@ -1,51 +1,20 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "*.html",
-      "use": "@vercel/static"
+      "source": "/",
+      "destination": "/index.html"
     },
     {
-      "src": "*.css",
-      "use": "@vercel/static"
+      "source": "/workflows",
+      "destination": "/static/workflows.html"
     },
     {
-      "src": "*.js",
-      "use": "@vercel/static"
+      "source": "/documentation",
+      "destination": "/static/documentation.html"
     },
     {
-      "src": "static/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "workflows/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/workflows",
-      "dest": "/static/workflows.html"
-    },
-    {
-      "src": "/documentation",
-      "dest": "/static/documentation.html"
-    },
-    {
-      "src": "/api-reference",
-      "dest": "/static/api-reference.html"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/workflows/(.*)",
-      "dest": "/workflows/$1"
+      "source": "/api-reference",
+      "destination": "/static/api-reference.html"
     }
   ],
   "headers": [
