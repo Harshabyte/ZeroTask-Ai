@@ -23,6 +23,35 @@ from workflow_db import WorkflowDatabase
 # Initialize database
 db = WorkflowDatabase()
 
+# Initialize database for serverless (do it at import time)
+try:
+    # Ensure database is available for serverless
+    stats = db.get_stats()
+    if stats['total'] == 0:
+        print("⚠️  Warning: No workflows found in database. Run indexing first.")
+    else:
+        print(f"✅ Database connected: {stats['total']} workflows indexed")
+except Exception as e:
+    print(f"❌ Database connection failed: {e}")
+    # Don't raise here for serverless compatibility
+
+# Serverless-compatible FastAPI app (without lifespan for Vercel)
+app_serverless = FastAPI(
+    title="N8N Workflow Documentation API",
+    description="Fast API for browsing and searching workflow documentation",
+    version="2.0.0"
+)
+
+# Add middleware for serverless app
+app_serverless.add_middleware(GZipMiddleware, minimum_size=1000)
+app_serverless.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan events."""
@@ -42,7 +71,7 @@ async def lifespan(app: FastAPI):
     # Shutdown
     db.close()
 
-# Initialize FastAPI app with lifespan
+# Initialize FastAPI app with lifespan for local development
 app = FastAPI(
     title="N8N Workflow Documentation API",
     description="Fast API for browsing and searching workflow documentation",
@@ -59,6 +88,33 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Decorator to register routes on both apps
+def dual_route(path: str, **kwargs):
+    """Decorator to register the same route on both apps"""
+    def decorator(func):
+        # Register on main app
+        app.route(path, **kwargs)(func)
+        # Register on serverless app  
+        app_serverless.route(path, **kwargs)(func)
+        return func
+    return decorator
+
+def dual_get(path: str, **kwargs):
+    """GET route decorator for both apps"""
+    def decorator(func):
+        app.get(path, **kwargs)(func)
+        app_serverless.get(path, **kwargs)(func)
+        return func
+    return decorator
+
+def dual_post(path: str, **kwargs):
+    """POST route decorator for both apps"""
+    def decorator(func):
+        app.post(path, **kwargs)(func)
+        app_serverless.post(path, **kwargs)(func)
+        return func
+    return decorator
 
 # Response models
 class WorkflowSummary(BaseModel):
@@ -106,7 +162,7 @@ class StatsResponse(BaseModel):
     unique_integrations: int
     last_indexed: str
 
-@app.get("/")
+@dual_get("/")
 async def root():
     """Serve the main landing page."""
     index_file = Path("index.html")
@@ -120,7 +176,7 @@ async def root():
         """)
     return FileResponse(str(index_file))
 
-@app.get("/workflows")
+@dual_get("/workflows")
 async def workflows_documentation():
     """Serve the professional workflow documentation page."""
     static_dir = Path("static")
@@ -143,12 +199,12 @@ async def workflows_documentation():
         """)
     return FileResponse(str(workflows_file))
 
-@app.get("/health")
+@dual_get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "message": "N8N Workflow API is running"}
 
-@app.get("/api/stats", response_model=StatsResponse)
+@dual_get("/api/stats", response_model=StatsResponse)
 async def get_stats():
     """Get workflow database statistics."""
     try:
@@ -157,7 +213,7 @@ async def get_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")
 
-@app.get("/api/workflows", response_model=SearchResponse)
+@dual_get("/api/workflows", response_model=SearchResponse)
 async def search_workflows(
     q: str = Query("", description="Search query"),
     trigger: str = Query("all", description="Filter by trigger type"),
@@ -222,7 +278,7 @@ async def search_workflows(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error searching workflows: {str(e)}")
 
-@app.get("/api/workflows/{filename}")
+@dual_get("/api/workflows/{filename}")
 async def get_workflow_detail(filename: str):
     """Get detailed workflow information including raw JSON."""
     try:
@@ -255,7 +311,7 @@ async def get_workflow_detail(filename: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error loading workflow: {str(e)}")
 
-@app.get("/api/workflows/{filename}/download")
+@dual_get("/api/workflows/{filename}/download")
 async def download_workflow(filename: str):
     """Download workflow JSON file."""
     try:
@@ -277,7 +333,7 @@ async def download_workflow(filename: str):
         print(f"Error downloading workflow {filename}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error downloading workflow: {str(e)}")
 
-@app.get("/api/workflows/{filename}/diagram")
+@dual_get("/api/workflows/{filename}/diagram")
 async def get_workflow_diagram(filename: str):
     """Get Mermaid diagram code for workflow visualization."""
     try:
@@ -378,7 +434,7 @@ def generate_mermaid_diagram(nodes: List[Dict], connections: Dict) -> str:
     # Format the final mermaid diagram code
     return "\n".join(mermaid_code)
 
-@app.post("/api/reindex")
+@dual_post("/api/reindex")
 async def reindex_workflows(background_tasks: BackgroundTasks, force: bool = False):
     """Trigger workflow reindexing in the background."""
     def run_indexing():
@@ -387,7 +443,7 @@ async def reindex_workflows(background_tasks: BackgroundTasks, force: bool = Fal
     background_tasks.add_task(run_indexing)
     return {"message": "Reindexing started in background"}
 
-@app.get("/api/integrations")
+@dual_get("/api/integrations")
 async def get_integrations():
     """Get list of all unique integrations."""
     try:
@@ -397,7 +453,7 @@ async def get_integrations():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching integrations: {str(e)}")
 
-@app.get("/api/categories")
+@dual_get("/api/categories")
 async def get_categories():
     """Get available workflow categories for filtering."""
     try:
@@ -431,7 +487,7 @@ async def get_categories():
         print(f"Error loading categories: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching categories: {str(e)}")
 
-@app.get("/api/category-mappings")
+@dual_get("/api/category-mappings")
 async def get_category_mappings():
     """Get filename to category mappings for client-side filtering."""
     try:
@@ -456,7 +512,7 @@ async def get_category_mappings():
         print(f"Error loading category mappings: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching category mappings: {str(e)}")
 
-@app.get("/api/workflows/category/{category}", response_model=SearchResponse)
+@dual_get("/api/workflows/category/{category}", response_model=SearchResponse)
 async def search_workflows_by_category(
     category: str,
     page: int = Query(1, ge=1, description="Page number"),
@@ -517,9 +573,16 @@ async def global_exception_handler(request, exc):
         content={"detail": f"Internal server error: {str(exc)}"}
     )
 
+@app_serverless.exception_handler(Exception)
+async def global_exception_handler_serverless(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"}
+    )
+
 # Mount static files AFTER all routes are defined
 # Mount specific file types at root level for direct access
-@app.get("/styles.css")
+@dual_get("/styles.css")
 async def serve_styles():
     """Serve the main CSS file."""
     css_file = Path("styles.css")
@@ -527,7 +590,7 @@ async def serve_styles():
         return FileResponse(str(css_file), media_type="text/css")
     raise HTTPException(status_code=404, detail="CSS file not found")
 
-@app.get("/scripts.js")
+@dual_get("/scripts.js")
 async def serve_scripts():
     """Serve the main JavaScript file."""
     js_file = Path("scripts.js")
@@ -535,7 +598,7 @@ async def serve_scripts():
         return FileResponse(str(js_file), media_type="application/javascript")
     raise HTTPException(status_code=404, detail="JavaScript file not found")
 
-@app.get("/bg.jpeg")
+@dual_get("/bg.jpeg")
 async def serve_background():
     """Serve the background image."""
     # Try root directory first
@@ -551,7 +614,7 @@ async def serve_background():
     raise HTTPException(status_code=404, detail="Background image not found")
 
 # Additional asset routes for static files
-@app.get("/static/{filename}")
+@dual_get("/static/{filename}")
 async def serve_static_file(filename: str):
     """Serve files from static directory."""
     file_path = Path("static") / filename
