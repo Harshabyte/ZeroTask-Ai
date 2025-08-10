@@ -23,35 +23,6 @@ from workflow_db import WorkflowDatabase
 # Initialize database
 db = WorkflowDatabase()
 
-# Initialize database for serverless (do it at import time)
-try:
-    # Ensure database is available for serverless
-    stats = db.get_stats()
-    if stats['total'] == 0:
-        print("⚠️  Warning: No workflows found in database. Run indexing first.")
-    else:
-        print(f"✅ Database connected: {stats['total']} workflows indexed")
-except Exception as e:
-    print(f"❌ Database connection failed: {e}")
-    # Don't raise here for serverless compatibility
-
-# Serverless-compatible FastAPI app (without lifespan for Vercel)
-app_serverless = FastAPI(
-    title="N8N Workflow Documentation API",
-    description="Fast API for browsing and searching workflow documentation",
-    version="2.0.0"
-)
-
-# Add middleware for serverless app
-app_serverless.add_middleware(GZipMiddleware, minimum_size=1000)
-app_serverless.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage application lifespan events."""
@@ -88,33 +59,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Decorator to register routes on both apps
-def dual_route(path: str, **kwargs):
-    """Decorator to register the same route on both apps"""
-    def decorator(func):
-        # Register on main app
-        app.route(path, **kwargs)(func)
-        # Register on serverless app  
-        app_serverless.route(path, **kwargs)(func)
-        return func
-    return decorator
-
-def dual_get(path: str, **kwargs):
-    """GET route decorator for both apps"""
-    def decorator(func):
-        app.get(path, **kwargs)(func)
-        app_serverless.get(path, **kwargs)(func)
-        return func
-    return decorator
-
-def dual_post(path: str, **kwargs):
-    """POST route decorator for both apps"""
-    def decorator(func):
-        app.post(path, **kwargs)(func)
-        app_serverless.post(path, **kwargs)(func)
-        return func
-    return decorator
 
 # Response models
 class WorkflowSummary(BaseModel):
@@ -573,16 +517,9 @@ async def global_exception_handler(request, exc):
         content={"detail": f"Internal server error: {str(exc)}"}
     )
 
-@app_serverless.exception_handler(Exception)
-async def global_exception_handler_serverless(request, exc):
-    return JSONResponse(
-        status_code=500,
-        content={"detail": f"Internal server error: {str(exc)}"}
-    )
-
 # Mount static files AFTER all routes are defined
 # Mount specific file types at root level for direct access
-@dual_get("/styles.css")
+@app.get("/styles.css")
 async def serve_styles():
     """Serve the main CSS file."""
     css_file = Path("styles.css")
